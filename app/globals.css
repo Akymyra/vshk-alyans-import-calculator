@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Скрываем элементы при печати (например кнопку "Скачать PDF") */
+@media print {
+  .screen-only {
+    display: none !important;
+  }
+}
+
+/* Плавное вращение шины */
+@keyframes smooth-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-smooth-spin {
+  animation: smooth-spin 3s linear infinite;
+}
+
