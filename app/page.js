@@ -58,11 +58,13 @@ export default function FuelSavingCalculator() {
   const resultsRef = useRef(null);
 
   // ======= Автоопределение устройства =======
+  const [isIOS, setIsIOS] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
     const handleResize = (e) => setIsMobileView(e.matches);
     handleResize(mq);
     mq.addEventListener("change", handleResize);
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent));
     return () => mq.removeEventListener("change", handleResize);
   }, []);
 
@@ -471,11 +473,25 @@ export default function FuelSavingCalculator() {
               {/* Подпись */}
               <p className="mt-6 font-bold text-blue-600">ВШК Альянс-Импорт</p>
 
-              {/* Инструкция */}
-              <p className="mt-6 text-xs text-gray-500">
-                📥 На <b>ПК и Android</b> можно скачать результаты в PDF.<br />
-                📱 На <b>iPhone</b> сохраните страницу как PDF через меню (<b>⋯</b> вверху/справа).
-              </p>
+              {/* Кнопка PDF только для ПК и Android */}
+              {!isIOS && (
+                <div className="screen-only mt-4">
+                  <button
+                    onClick={downloadPDF}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold"
+                  >
+                    Скачать PDF
+                  </button>
+                </div>
+              )}
+
+              {/* Инструкция только для iPhone */}
+              {isIOS && (
+                <p className="mt-6 text-xs text-gray-500">
+                  📱 На iPhone сохраните страницу как PDF через меню (<b>⋯</b> внизу/справа).<br />
+                  📥 На ПК и Android доступна кнопка «Скачать PDF».
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -483,6 +499,7 @@ export default function FuelSavingCalculator() {
     </div>
   );
 }
+
 
 
 
