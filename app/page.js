@@ -188,13 +188,10 @@ export default function FuelSavingCalculator() {
     }, 2500);
   };
 
-  // ======= PDF (универсально для ПК/Android/iPhone) =======
+  // ======= PDF =======
   const downloadPDF = () => {
     const el = document.getElementById("pdf-content");
     if (!el) return;
-
-    const screenOnly = el.querySelectorAll(".screen-only");
-    screenOnly.forEach((n) => (n.style.display = "none"));
 
     setTimeout(() => {
       html2canvas(el, { scale: 2, backgroundColor: "#fff", useCORS: true }).then((canvas) => {
@@ -216,20 +213,15 @@ export default function FuelSavingCalculator() {
 
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
 
-        // ✅ Определяем устройство
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
         if (isIOS) {
-          // iPhone/iPad → открыть PDF во вкладке
           const pdfBlob = pdf.output("blob");
           const blobUrl = URL.createObjectURL(pdfBlob);
           window.open(blobUrl, "_blank");
         } else {
-          // Android + ПК → скачать сразу
           pdf.save("Alliance-Fuel-Savings.pdf");
         }
-
-        screenOnly.forEach((n) => (n.style.display = ""));
       });
     }, 200);
   };
@@ -397,109 +389,111 @@ export default function FuelSavingCalculator() {
 
           {/* Результаты */}
           {Object.keys(savings).length > 0 && (
-            <div
-              id="pdf-content"
-              ref={resultsRef}
-              className="mt-6 space-y-4 bg-white p-4 rounded-2xl shadow-lg text-center mx-auto"
-              style={{ color: "#028cff", maxWidth: "100%" }}
-            >
-              <h2 className="text-lg sm:text-xl font-bold mb-3">Результаты расчёта</h2>
+            <>
+              <div
+                id="pdf-content"
+                ref={resultsRef}
+                className="mt-6 space-y-4 bg-white p-4 rounded-2xl shadow-lg text-center mx-auto"
+                style={{ color: "#028cff", maxWidth: "100%" }}
+              >
+                <h2 className="text-lg sm:text-xl font-bold mb-3">Результаты расчёта</h2>
 
-              <p className="mb-2 text-sm sm:text-base text-center">
-                На основании введённых данных выполнен <b>предварительный расчёт</b>. Реальная экономия зависит от условий дороги, нагрузки, стиля вождения, давления и техсостояния. <br />
-                С нашими шинами вы сможете сэкономить{" "}
-                <b>
-                  от {Math.min(...Object.values(savings)).toFixed(0)} ₽ до{" "}
-                  {Math.max(...Object.values(savings)).toFixed(0)} ₽
-                </b>.
-              </p>
+                <p className="mb-2 text-sm sm:text-base text-center">
+                  На основании введённых данных выполнен <b>предварительный расчёт</b>. Реальная экономия зависит от условий дороги, нагрузки, стиля вождения, давления и техсостояния. <br />
+                  С нашими шинами вы сможете сэкономить{" "}
+                  <b>
+                    от {Math.min(...Object.values(savings)).toFixed(0)} ₽ до{" "}
+                    {Math.max(...Object.values(savings)).toFixed(0)} ₽
+                  </b>.
+                </p>
 
-              {/* Диаграмма */}
-              <div className={`${contentWidthClass} w-full mx-auto`}>
-                <div className="w-full px-4">
-                  <div className="border border-gray-300 rounded-lg flex justify-center">
-                    <ResponsiveContainer width="100%" height={isMobileView ? 260 : 340}>
-                      <PieChart>
-                        <Pie
-                          data={pieData}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={isMobileView ? 100 : 140}
-                          labelLine={false}
-                        >
-                          {pieData.map((entry, idx) => (
-                            <Cell key={`cell-${entry.name}`} fill={COLORS[idx % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(v, n, props) => `${props.payload.real.toFixed(0)} ₽`} labelFormatter={(label) => `Бренд: ${label}`} />
-                        <Legend
-                          layout={isMobileView ? "horizontal" : "vertical"}
-                          verticalAlign={isMobileView ? "bottom" : "middle"}
-                          align={isMobileView ? "center" : "right"}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                {/* Диаграмма */}
+                <div className={`${contentWidthClass} w-full mx-auto`}>
+                  <div className="w-full px-4">
+                    <div className="border border-gray-300 rounded-lg flex justify-center">
+                      <ResponsiveContainer width="100%" height={isMobileView ? 260 : 340}>
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={isMobileView ? 100 : 140}
+                            labelLine={false}
+                          >
+                            {pieData.map((entry, idx) => (
+                              <Cell key={`cell-${entry.name}`} fill={COLORS[idx % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(v, n, props) => `${props.payload.real.toFixed(0)} ₽`} labelFormatter={(label) => `Бренд: ${label}`} />
+                          <Legend
+                            layout={isMobileView ? "horizontal" : "vertical"}
+                            verticalAlign={isMobileView ? "bottom" : "middle"}
+                            align={isMobileView ? "center" : "right"}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Таблица */}
-              <div id="pdf-table" className={`flex justify-center mt-4 ${isMobileView ? "scale-75" : ""}`}>
-                <table className={`border-collapse border border-gray-300 text-center w-full ${isMobileView ? "text-[10px]" : "text-sm"}`}>
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border px-1 py-1">Показатель</th>
-                      {Object.keys(brandReductions).map((brand) => (
-                        <th key={brand} className="border px-1 py-1">{brand}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border px-1 py-1">Снижение расхода</td>
-                      {Object.values(brandReductions).map((pct, idx) => (
-                        <td key={idx} className="border px-1 py-1">−{pct}%</td>
-                      ))}
-                    </tr>
-                    <tr>
-                      <td className="border px-1 py-1">Экономия денег</td>
-                      {Object.keys(brandReductions).map((brand) => (
-                        <td key={brand} className="border px-1 py-1">{savings[brand]?.toFixed(0)} ₽</td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Иконки */}
-              <div className="flex justify-center gap-6 mt-6 flex-wrap">
-                {[
-                  { src: "/fuel.png", text: "Экономия топлива" },
-                  { src: "/money.png", text: "Экономия денег" },
-                  { src: "/speed.png", text: "Быстрый расчёт" },
-                ].map((item, i) => (
-                  <div key={i} className="flex flex-col items-center w-20">
-                    <img src={item.src} alt={item.text} className={`${iconSize} mb-2 object-contain`} />
-                    <p className={`${isMobileView ? "text-xs" : "text-sm"} text-center`}>{item.text}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Подпись */}
-              <p className="mt-6 font-bold text-blue-600">ВШК Альянс-Импорт</p>
-
-              {/* Кнопка PDF */}
-                <div className="screen-only mt-4">
-                  <button
-                    onClick={downloadPDF}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold"
-                  >
-                    {/iPad|iPhone|iPod/.test(navigator.userAgent) ? "Открыть PDF" : "Скачать PDF"}
-                  </button>
+                {/* Таблица */}
+                <div id="pdf-table" className={`flex justify-center mt-4 ${isMobileView ? "scale-75" : ""}`}>
+                  <table className={`border-collapse border border-gray-300 text-center w-full ${isMobileView ? "text-[10px]" : "text-sm"}`}>
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border px-1 py-1">Показатель</th>
+                        {Object.keys(brandReductions).map((brand) => (
+                          <th key={brand} className="border px-1 py-1">{brand}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border px-1 py-1">Снижение расхода</td>
+                        {Object.values(brandReductions).map((pct, idx) => (
+                          <td key={idx} className="border px-1 py-1">−{pct}%</td>
+                        ))}
+                      </tr>
+                      <tr>
+                        <td className="border px-1 py-1">Экономия денег</td>
+                        {Object.keys(brandReductions).map((brand) => (
+                          <td key={brand} className="border px-1 py-1">{savings[brand]?.toFixed(0)} ₽</td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-            </div>
+
+                {/* Иконки */}
+                <div className="flex justify-center gap-6 mt-6 flex-wrap">
+                  {[
+                    { src: "/fuel.png", text: "Экономия топлива" },
+                    { src: "/money.png", text: "Экономия денег" },
+                    { src: "/speed.png", text: "Быстрый расчёт" },
+                  ].map((item, i) => (
+                    <div key={i} className="flex flex-col items-center w-20">
+                      <img src={item.src} alt={item.text} className={`${iconSize} mb-2 object-contain`} />
+                      <p className={`${isMobileView ? "text-xs" : "text-sm"} text-center`}>{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Подпись */}
+                <p className="mt-6 font-bold text-blue-600">ВШК Альянс-Импорт</p>
+              </div>
+
+              {/* Кнопка PDF вне блока pdf-content */}
+              <div className="screen-only mt-4">
+                <button
+                  onClick={downloadPDF}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold"
+                >
+                  {/iPad|iPhone|iPod/.test(navigator.userAgent) ? "Открыть PDF" : "Скачать PDF"}
+                </button>
+              </div>
+            </>
           )}
         </div>
       )}
