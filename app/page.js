@@ -225,10 +225,14 @@ export default function FuelSavingCalculator() {
         if (isIOS && newTab) {
           const pdfBlob = pdf.output("blob");
           const blobUrl = URL.createObjectURL(pdfBlob);
-          newTab.location.href = blobUrl;
-        } else {
+          newTab.document.body.style.margin = "0";
+          newTab.document.body.style.height = "100vh";
+          newTab.document.body.innerHTML = `<iframe src="${blobUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+        } 
+          else {
           pdf.save("Alliance-Fuel-Savings.pdf");
-        }
+          }
+
       });
     }, 200);
   };
