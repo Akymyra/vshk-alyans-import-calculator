@@ -471,7 +471,12 @@ export default function FuelSavingCalculator() {
               </div>
 
               {/* Подпись */}
-              <p className="mt-6 font-bold text-blue-600">ВШК Альянс-Импорт</p>
+              <p
+                className="mt-6 font-bold"
+                style={{ color: "#028cff", maxWidth: "100%" }}
+                >
+                ВШК Альянс-Импорт
+              </p>
 
               {/* Кнопка PDF только для ПК и Android */}
               {!isIOS && (
