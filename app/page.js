@@ -390,16 +390,6 @@ export default function FuelSavingCalculator() {
                 className="mt-6 space-y-4 bg-white p-4 rounded-2xl shadow-lg text-center mx-auto flex flex-col items-center"
                 style={{ color: "#028cff", maxWidth: "100%" }}
               >
-               <div className="flex justify-center">
-                  <img 
-                    src="/logo.svg" 
-                    alt="ВШК Альянс-Импорт" 
-                    className="max-w-full h-auto" 
-                    style={{ width: "100%", maxWidth: "250px", objectFit: "contain" }} 
-                  />
-                </div>
-
-
                 <h2 className="text-lg sm:text-xl font-bold mb-3">Результаты расчёта</h2>
 
                 <p className="mb-2 text-sm sm:text-base text-center">
@@ -472,18 +462,22 @@ export default function FuelSavingCalculator() {
               </div>
 
               {/* Иконки */}
-              <div className="flex justify-center gap-6 mt-6 flex-wrap">
-                {[
-                  { src: "/fuel.png", text: "Экономия топлива" },
-                  { src: "/money.png", text: "Экономия денег" },
-                  { src: "/speed.png", text: "Быстрый расчёт" },
-                ].map((item, i) => (
-                  <div key={i} className="flex flex-col items-center w-20">
-                    <img src={item.src} alt={item.text} className={`${iconSize} mb-2 object-contain`} />
-                    <p className={`${isMobileView ? "text-xs" : "text-sm"} text-center`}>{item.text}</p>
+                  <div className="flex justify-center gap-6 mt-6 flex-wrap">
+                    {[
+                      { src: "/fuel.png", text: "Экономия топлива" },
+                      { src: "/money.png", text: "Экономия денег" },
+                      { src: "/speed.png", text: "Быстрый расчёт" },
+                    ].map((item, i) => (
+                      <div key={i} className="flex flex-col items-center w-20">
+                        <img src={item.src} alt={item.text} className={`${iconSize} mb-2 object-contain`} />
+                        <p className={`${isMobileView ? "text-xs" : "text-sm"} text-center`}>{item.text}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+
+                {/* Подпись */}
+                <p className="mt-6 font-bold text-blue-600">ВШК Альянс-Импорт</p>
+
 
               {/* Кнопка PDF */}
               <div className="screen-only mt-4">
