@@ -188,7 +188,7 @@ export default function FuelSavingCalculator() {
     }, 2500);
   };
 
-  // ======= PDF (всё на 1 страницу, уменьшено) =======
+  // ======= PDF (надёжное сохранение через Blob) =======
   const downloadPDF = () => {
     const el = document.getElementById("pdf-content");
     if (!el) return;
@@ -202,7 +202,7 @@ export default function FuelSavingCalculator() {
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
 
-        let imgWidth = pageWidth - 20; // поля
+        let imgWidth = pageWidth - 20;
         let imgHeight = (canvas.height * imgWidth) / canvas.width;
 
         if (imgHeight > pageHeight - 20) {
@@ -215,7 +215,20 @@ export default function FuelSavingCalculator() {
         const y = (pageHeight - imgHeight) / 2;
 
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
-        pdf.save("Alliance_Fuel_Savings.pdf");
+
+        // ✅ сохраняем через Blob (корректно и на телефонах)
+        const pdfBlob = pdf.output("blob");
+        const blobUrl = URL.createObjectURL(pdfBlob);
+
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = "Alliance-Fuel-Savings.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(blobUrl);
+
         screenOnly.forEach((n) => (n.style.display = ""));
       });
     }, 200);
@@ -382,25 +395,24 @@ export default function FuelSavingCalculator() {
             </div>
           )}
 
-              {/* Результаты */}
-              {Object.keys(savings).length > 0 && (
-              <div
-                id="pdf-content"
-                ref={resultsRef}
-                className="mt-6 space-y-4 bg-white p-4 rounded-2xl shadow-lg text-center mx-auto flex flex-col items-center"
-                style={{ color: "#028cff", maxWidth: "100%" }}
-              >
-                <h2 className="text-lg sm:text-xl font-bold mb-3">Результаты расчёта</h2>
+          {/* Результаты */}
+          {Object.keys(savings).length > 0 && (
+            <div
+              id="pdf-content"
+              ref={resultsRef}
+              className="mt-6 space-y-4 bg-white p-4 rounded-2xl shadow-lg text-center mx-auto"
+              style={{ color: "#028cff", maxWidth: "100%" }}
+            >
+              <h2 className="text-lg sm:text-xl font-bold mb-3">Результаты расчёта</h2>
 
-                <p className="mb-2 text-sm sm:text-base text-center">
-                  На основании введённых данных выполнен <b>предварительный расчёт</b>. Реальная экономия зависит от условий дороги, нагрузки, стиля вождения, давления и техсостояния. <br />
-                  С нашими шинами вы сможете сэкономить{" "}
-                  <b>
-                    от {Math.min(...Object.values(savings)).toFixed(0)} ₽ до{" "}
-                    {Math.max(...Object.values(savings)).toFixed(0)} ₽
-                  </b>.
-                </p>
-
+              <p className="mb-2 text-sm sm:text-base text-center">
+                На основании введённых данных выполнен <b>предварительный расчёт</b>. Реальная экономия зависит от условий дороги, нагрузки, стиля вождения, давления и техсостояния. <br />
+                С нашими шинами вы сможете сэкономить{" "}
+                <b>
+                  от {Math.min(...Object.values(savings)).toFixed(0)} ₽ до{" "}
+                  {Math.max(...Object.values(savings)).toFixed(0)} ₽
+                </b>.
+              </p>
 
               {/* Диаграмма */}
               <div className={`${contentWidthClass} w-full mx-auto`}>
@@ -462,22 +474,21 @@ export default function FuelSavingCalculator() {
               </div>
 
               {/* Иконки */}
-                  <div className="flex justify-center gap-6 mt-6 flex-wrap">
-                    {[
-                      { src: "/fuel.png", text: "Экономия топлива" },
-                      { src: "/money.png", text: "Экономия денег" },
-                      { src: "/speed.png", text: "Быстрый расчёт" },
-                    ].map((item, i) => (
-                      <div key={i} className="flex flex-col items-center w-20">
-                        <img src={item.src} alt={item.text} className={`${iconSize} mb-2 object-contain`} />
-                        <p className={`${isMobileView ? "text-xs" : "text-sm"} text-center`}>{item.text}</p>
-                      </div>
-                    ))}
+              <div className="flex justify-center gap-6 mt-6 flex-wrap">
+                {[
+                  { src: "/fuel.png", text: "Экономия топлива" },
+                  { src: "/money.png", text: "Экономия денег" },
+                  { src: "/speed.png", text: "Быстрый расчёт" },
+                ].map((item, i) => (
+                  <div key={i} className="flex flex-col items-center w-20">
+                    <img src={item.src} alt={item.text} className={`${iconSize} mb-2 object-contain`} />
+                    <p className={`${isMobileView ? "text-xs" : "text-sm"} text-center`}>{item.text}</p>
                   </div>
+                ))}
+              </div>
 
-                {/* Подпись */}
-                <p className="mt-6 font-bold text-blue-600">ВШК Альянс-Импорт</p>
-
+              {/* Подпись */}
+              <p className="mt-6 font-bold text-blue-600">ВШК Альянс-Импорт</p>
 
               {/* Кнопка PDF */}
               <div className="screen-only mt-4">
@@ -492,6 +503,7 @@ export default function FuelSavingCalculator() {
     </div>
   );
 }
+
 
 
 
