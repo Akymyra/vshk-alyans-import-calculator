@@ -188,51 +188,42 @@ export default function FuelSavingCalculator() {
     }, 2500);
   };
 
-  // ======= PDF (надёжное сохранение через Blob) =======
-  const downloadPDF = () => {
-    const el = document.getElementById("pdf-content");
-    if (!el) return;
+  // ======= PDF (упрощённо и надёжно) =======
+const downloadPDF = () => {
+  const el = document.getElementById("pdf-content");
+  if (!el) return;
 
-    const screenOnly = el.querySelectorAll(".screen-only");
-    screenOnly.forEach((n) => (n.style.display = "none"));
+  const screenOnly = el.querySelectorAll(".screen-only");
+  screenOnly.forEach((n) => (n.style.display = "none"));
 
-    setTimeout(() => {
-      html2canvas(el, { scale: 2, backgroundColor: "#fff", useCORS: true }).then((canvas) => {
-        const pdf = new jsPDF("p", "mm", "a4");
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
+  setTimeout(() => {
+    html2canvas(el, { scale: 2, backgroundColor: "#fff", useCORS: true }).then((canvas) => {
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
 
-        let imgWidth = pageWidth - 20;
-        let imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let imgWidth = pageWidth - 20;
+      let imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        if (imgHeight > pageHeight - 20) {
-          const ratio = (pageHeight - 20) / imgHeight;
-          imgHeight *= ratio;
-          imgWidth *= ratio;
-        }
+      if (imgHeight > pageHeight - 20) {
+        const ratio = (pageHeight - 20) / imgHeight;
+        imgHeight *= ratio;
+        imgWidth *= ratio;
+      }
 
-        const x = (pageWidth - imgWidth) / 2;
-        const y = (pageHeight - imgHeight) / 2;
+      const x = (pageWidth - imgWidth) / 2;
+      const y = (pageHeight - imgHeight) / 2;
 
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
 
-        // ✅ сохраняем через Blob (корректно и на телефонах)
-        const pdfBlob = pdf.output("blob");
-        const blobUrl = URL.createObjectURL(pdfBlob);
+      // ✅ сохраняем стандартным методом
+      pdf.save("Alliance-Fuel-Savings.pdf");
 
-        const link = document.createElement("a");
-        link.href = blobUrl;
-        link.download = "Alliance-Fuel-Savings.pdf";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      screenOnly.forEach((n) => (n.style.display = ""));
+    });
+  }, 200);
+};
 
-        URL.revokeObjectURL(blobUrl);
-
-        screenOnly.forEach((n) => (n.style.display = ""));
-      });
-    }, 200);
-  };
 
   // ======= Поле ввода =======
   const renderInput = (label, value, setValue, history, keyName, setHistory) => (
