@@ -193,6 +193,15 @@ export default function FuelSavingCalculator() {
     const el = document.getElementById("pdf-content");
     if (!el) return;
 
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    let newTab = null;
+
+    if (isIOS) {
+      // Открываем вкладку сразу, пока Safari не заблокировал
+      newTab = window.open("", "_blank");
+      newTab.document.write("<p>Генерация PDF...</p>");
+    }
+
     setTimeout(() => {
       html2canvas(el, { scale: 2, backgroundColor: "#fff", useCORS: true }).then((canvas) => {
         const pdf = new jsPDF("p", "mm", "a4");
@@ -213,12 +222,10 @@ export default function FuelSavingCalculator() {
 
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
 
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-        if (isIOS) {
+        if (isIOS && newTab) {
           const pdfBlob = pdf.output("blob");
           const blobUrl = URL.createObjectURL(pdfBlob);
-          window.open(blobUrl, "_blank");
+          newTab.location.href = blobUrl;
         } else {
           pdf.save("Alliance-Fuel-Savings.pdf");
         }
@@ -390,6 +397,7 @@ export default function FuelSavingCalculator() {
           {/* Результаты */}
           {Object.keys(savings).length > 0 && (
             <>
+              {/* ======= Только результаты для PDF ======= */}
               <div
                 id="pdf-content"
                 ref={resultsRef}
@@ -409,37 +417,35 @@ export default function FuelSavingCalculator() {
 
                 {/* Диаграмма */}
                 <div className={`${contentWidthClass} w-full mx-auto`}>
-                  <div className="w-full px-4">
-                    <div className="border border-gray-300 rounded-lg flex justify-center">
-                      <ResponsiveContainer width="100%" height={isMobileView ? 260 : 340}>
-                        <PieChart>
-                          <Pie
-                            data={pieData}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={isMobileView ? 100 : 140}
-                            labelLine={false}
-                          >
-                            {pieData.map((entry, idx) => (
-                              <Cell key={`cell-${entry.name}`} fill={COLORS[idx % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(v, n, props) => `${props.payload.real.toFixed(0)} ₽`} labelFormatter={(label) => `Бренд: ${label}`} />
-                          <Legend
-                            layout={isMobileView ? "horizontal" : "vertical"}
-                            verticalAlign={isMobileView ? "bottom" : "middle"}
-                            align={isMobileView ? "center" : "right"}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
+                  <div className="border border-gray-300 rounded-lg flex justify-center">
+                    <ResponsiveContainer width="100%" height={isMobileView ? 260 : 340}>
+                      <PieChart>
+                        <Pie
+                          data={pieData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={isMobileView ? 100 : 140}
+                          labelLine={false}
+                        >
+                          {pieData.map((entry, idx) => (
+                            <Cell key={`cell-${entry.name}`} fill={COLORS[idx % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(v, n, props) => `${props.payload.real.toFixed(0)} ₽`} labelFormatter={(label) => `Бренд: ${label}`} />
+                        <Legend
+                          layout={isMobileView ? "horizontal" : "vertical"}
+                          verticalAlign={isMobileView ? "bottom" : "middle"}
+                          align={isMobileView ? "center" : "right"}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
 
                 {/* Таблица */}
-                <div id="pdf-table" className={`flex justify-center mt-4 ${isMobileView ? "scale-75" : ""}`}>
+                <div className={`flex justify-center mt-4 ${isMobileView ? "scale-75" : ""}`}>
                   <table className={`border-collapse border border-gray-300 text-center w-full ${isMobileView ? "text-[10px]" : "text-sm"}`}>
                     <thead>
                       <tr className="bg-gray-100">
@@ -500,6 +506,7 @@ export default function FuelSavingCalculator() {
     </div>
   );
 }
+
 
 
 
