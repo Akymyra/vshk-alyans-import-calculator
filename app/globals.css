@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Глобальный фон для всего сайта */
+body {
+  background-image: url('/фон.png');
+  background-size: cover;         /* растягивает на весь экран */
+  background-repeat: no-repeat;   /* не повторяется */
+  background-position: center;    /* центрируется */
+  background-attachment: fixed;   /* остаётся на месте при скролле */
+}
+
 /* Скрываем элементы при печати (например кнопку "Скачать PDF") */
 @media print {
   .screen-only {
@@ -22,4 +31,5 @@
 .animate-smooth-spin {
   animation: smooth-spin 3s linear infinite;
 }
+
 

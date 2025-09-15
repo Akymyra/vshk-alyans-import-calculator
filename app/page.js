@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { Sun, Moon, Smartphone, Monitor } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import "./globals.css";
 
 export default function FuelSavingCalculator() {
@@ -20,9 +20,9 @@ export default function FuelSavingCalculator() {
   const [fadeStage, setFadeStage] = useState("fade-in");
 
   useEffect(() => {
-    const t1 = setTimeout(() => setFadeStage("visible"), 800);   // fade-in
-    const t2 = setTimeout(() => setFadeStage("fade-out"), 3300); // держим дольше
-    const t3 = setTimeout(() => setAppLoading(false), 4300);     // калькулятор появляется
+    const t1 = setTimeout(() => setFadeStage("visible"), 800);
+    const t2 = setTimeout(() => setFadeStage("fade-out"), 3300);
+    const t3 = setTimeout(() => setAppLoading(false), 4300);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -51,13 +51,22 @@ export default function FuelSavingCalculator() {
 
   // ======= UI =======
   const [theme, setTheme] = useState("dark");
-  const [viewMode, setViewMode] = useState("pc");
   const [toast, setToast] = useState({ type: "", msg: "" });
+  const [isMobileView, setIsMobileView] = useState(false);
 
   const loaderRef = useRef(null);
   const resultsRef = useRef(null);
 
-  // Проценты снижения расхода
+  // ======= Автоопределение устройства =======
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const handleResize = (e) => setIsMobileView(e.matches);
+    handleResize(mq);
+    mq.addEventListener("change", handleResize);
+    return () => mq.removeEventListener("change", handleResize);
+  }, []);
+
+  // ======= Проценты снижения расхода =======
   const brandReductions = {
     Aufine: 5.0,
     Annaite: 4.8,
@@ -126,10 +135,10 @@ export default function FuelSavingCalculator() {
   const showError = (msg) => setToast({ type: "error", msg });
   const showSuccess = (msg) => setToast({ type: "success", msg });
 
-  // ======= Диаграмма с фиксированными долями =======
+  // ======= Диаграмма =======
   const buildPieData = (savingsObj) => {
     if (!savingsObj || Object.keys(savingsObj).length === 0) return [];
-    const FIXED_SHARES = [0.30, 0.25, 0.20, 0.15, 0.10];
+    const FIXED_SHARES = [0.3, 0.25, 0.2, 0.15, 0.1];
     const sorted = Object.entries(savingsObj).sort((a, b) => b[1] - a[1]);
     return sorted.map(([brand, realValue], idx) => ({
       name: brand,
@@ -274,7 +283,6 @@ export default function FuelSavingCalculator() {
     </div>
   );
 
-  const isMobileView = viewMode === "mobile";
   const iconSize = isMobileView ? "w-12 h-12" : "w-16 h-16";
   const contentWidthClass = isMobileView ? "max-w-[340px]" : "max-w-[720px]";
   const pieData = buildPieData(savings);
@@ -283,13 +291,13 @@ export default function FuelSavingCalculator() {
   return (
     <div
       className={`min-h-screen flex items-center justify-center p-3 ${
-        theme === "dark" ? "bg-gray-900" : "bg-white"
+        theme === "dark" ? "bg-gray-900/70" : "bg-white/70"
       }`}
     >
       {appLoading ? (
         // Splash screen
         <div
-          className={`min-h-screen flex flex-col justify-center items-center bg-gray-900 transition-opacity duration-1000 ${
+          className={`min-h-screen flex flex-col justify-center items-center transition-opacity duration-1000 ${
             fadeStage === "fade-in"
               ? "opacity-0"
               : fadeStage === "visible"
@@ -300,9 +308,11 @@ export default function FuelSavingCalculator() {
           <img src="/logo.svg" alt="Логотип" className="w-[420px] h-auto" />
         </div>
       ) : (
-        // Калькулятор
+        // Карточка калькулятора
         <div
-          className={`${isMobileView ? "max-w-[380px]" : "max-w-3xl"} w-full p-4 rounded-2xl shadow-lg relative border text-center transition-opacity duration-700 opacity-100`}
+          className={`${
+            isMobileView ? "max-w-[380px]" : "max-w-3xl"
+          } w-full p-4 rounded-2xl shadow-lg relative border text-center transition-opacity duration-700 opacity-100`}
           style={
             theme === "light"
               ? { backgroundColor: "#dce7f5", color: "#028cff" }
@@ -320,32 +330,36 @@ export default function FuelSavingCalculator() {
             </div>
           )}
 
-          {/* Переключатели */}
-          <div className="absolute top-4 left-4 screen-only">
-            <button
-              onClick={() => setViewMode(isMobileView ? "pc" : "mobile")}
-              className={`p-2 rounded-full ${isMobileView ? "bg-blue-900" : "bg-orange-500"}`}
-              title={isMobileView ? "ПК-версия" : "Мобильная версия"}
-            >
-              {isMobileView ? <Monitor size={20} color="white" /> : <Smartphone size={20} color="white" />}
-            </button>
-          </div>
+          {/* Переключатель темы */}
           <div className="absolute top-4 right-4 screen-only">
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className={`p-2 rounded-full ${theme === "dark" ? "bg-orange-500" : "bg-blue-900"}`}
+              className={`p-2 rounded-full ${
+                theme === "dark" ? "bg-orange-500" : "bg-blue-900"
+              }`}
               title={theme === "dark" ? "Светлая тема" : "Тёмная тема"}
             >
-              {theme === "dark" ? <Sun size={20} color="white" /> : <Moon size={20} color="white" />}
+              {theme === "dark" ? (
+                <Sun size={20} color="white" />
+              ) : (
+                <Moon size={20} color="white" />
+              )}
             </button>
           </div>
 
           {/* Лого */}
           <div className="flex justify-center">
-            <img src="/logo.svg" alt="ВШК Альянс-Импорт" className="w-full max-w-[300px] h-auto" />
+            <img
+              src="/logo.svg"
+              alt="ВШК Альянс-Импорт"
+              className="w-full max-w-[300px] h-auto"
+            />
           </div>
 
-          <h1 className="text-xl sm:text-2xl font-bold mb-3 text-center" style={{ color: "#028cff" }}>
+          <h1
+            className="text-xl sm:text-2xl font-bold mb-3 text-center"
+            style={{ color: "#028cff" }}
+          >
             Калькулятор экономии топлива
           </h1>
 
@@ -357,10 +371,35 @@ export default function FuelSavingCalculator() {
           </p>
 
           {/* Поля */}
-          <div className={`${isMobileView ? "max-w-xs" : "max-w-md"} mx-auto space-y-3`}>
-            {renderInput("Пробег, км", distance, setDistance, distanceHistory, "distance", setDistanceHistory)}
-            {renderInput("Расход, л/100км", consumption, setConsumption, consumptionHistory, "consumption", setConsumptionHistory)}
-            {renderInput("Цена топлива, ₽/л", fuelPrice, setFuelPrice, fuelPriceHistory, "fuelPrice", setFuelPriceHistory)}
+          <div
+            className={`${
+              isMobileView ? "max-w-xs" : "max-w-md"
+            } mx-auto space-y-3`}
+          >
+            {renderInput(
+              "Пробег, км",
+              distance,
+              setDistance,
+              distanceHistory,
+              "distance",
+              setDistanceHistory
+            )}
+            {renderInput(
+              "Расход, л/100км",
+              consumption,
+              setConsumption,
+              consumptionHistory,
+              "consumption",
+              setConsumptionHistory
+            )}
+            {renderInput(
+              "Цена топлива, ₽/л",
+              fuelPrice,
+              setFuelPrice,
+              fuelPriceHistory,
+              "fuelPrice",
+              setFuelPriceHistory
+            )}
           </div>
 
           <button
@@ -373,7 +412,11 @@ export default function FuelSavingCalculator() {
           {/* Лоадер */}
           {loading && (
             <div ref={loaderRef} className="flex flex-col items-center mt-4">
-              <img src="/tire.png" alt="Загрузка" className="w-20 sm:w-28 h-auto animate-smooth-spin" />
+              <img
+                src="/tire.png"
+                alt="Загрузка"
+                className="w-20 sm:w-28 h-auto animate-smooth-spin"
+              />
               <p className="mt-2 text-center" style={{ color: "#028cff" }}>
                 Идёт расчёт…
               </p>
@@ -389,24 +432,37 @@ export default function FuelSavingCalculator() {
               style={{ color: "#028cff", maxWidth: "100%" }}
             >
               <div className="flex justify-center">
-                <img src="/logo.svg" alt="ВШК Альянс-Импорт" className="w-full max-w-[300px] h-auto" />
+                <img
+                  src="/logo.svg"
+                  alt="ВШК Альянс-Импорт"
+                  className="w-full max-w-[300px] h-auto"
+                />
               </div>
-              <h2 className="text-lg sm:text-xl font-bold mb-3">Калькулятор экономии топлива</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3">
+                Калькулятор экономии топлива
+              </h2>
 
               <p className="mb-2 text-sm sm:text-base text-center">
-                На основании введённых данных выполнен <b>предварительный расчёт</b>. Реальная экономия зависит от условий дороги, нагрузки, стиля вождения, давления и техсостояния. <br />
+                На основании введённых данных выполнен{" "}
+                <b>предварительный расчёт</b>. Реальная экономия зависит от
+                условий дороги, нагрузки, стиля вождения, давления и
+                техсостояния. <br />
                 С нашими шинами вы сможете сэкономить{" "}
                 <b>
                   от {Math.min(...Object.values(savings)).toFixed(0)} ₽ до{" "}
                   {Math.max(...Object.values(savings)).toFixed(0)} ₽
-                </b>.
+                </b>
+                .
               </p>
 
               {/* Диаграмма */}
               <div className={`${contentWidthClass} w-full mx-auto`}>
                 <div className="w-full px-4">
                   <div className="border border-gray-300 rounded-lg flex justify-center">
-                    <ResponsiveContainer width="100%" height={isMobileView ? 260 : 340}>
+                    <ResponsiveContainer
+                      width="100%"
+                      height={isMobileView ? 260 : 340}
+                    >
                       <PieChart>
                         <Pie
                           data={pieData}
@@ -418,10 +474,18 @@ export default function FuelSavingCalculator() {
                           labelLine={false}
                         >
                           {pieData.map((entry, idx) => (
-                            <Cell key={`cell-${entry.name}`} fill={COLORS[idx % COLORS.length]} />
+                            <Cell
+                              key={`cell-${entry.name}`}
+                              fill={COLORS[idx % COLORS.length]}
+                            />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(v, n, props) => `${props.payload.real.toFixed(0)} ₽`} labelFormatter={(label) => `Бренд: ${label}`} />
+                        <Tooltip
+                          formatter={(v, n, props) =>
+                            `${props.payload.real.toFixed(0)} ₽`
+                          }
+                          labelFormatter={(label) => `Бренд: ${label}`}
+                        />
                         <Legend
                           layout={isMobileView ? "horizontal" : "vertical"}
                           verticalAlign={isMobileView ? "bottom" : "middle"}
@@ -434,12 +498,18 @@ export default function FuelSavingCalculator() {
 
                 {/* Таблица */}
                 <div className="flex justify-center mt-4">
-                  <table className={`border-collapse border border-gray-300 w-full text-center ${isMobileView ? "text-[9px]" : "text-sm"}`}>
+                  <table
+                    className={`border-collapse border border-gray-300 w-full text-center ${
+                      isMobileView ? "text-[9px]" : "text-sm"
+                    }`}
+                  >
                     <thead>
                       <tr className="bg-gray-100">
                         <th className="border px-2 py-1">Показатель</th>
                         {Object.keys(brandReductions).map((brand) => (
-                          <th key={brand} className="border px-2 py-1">{brand}</th>
+                          <th key={brand} className="border px-2 py-1">
+                            {brand}
+                          </th>
                         ))}
                       </tr>
                     </thead>
@@ -447,13 +517,17 @@ export default function FuelSavingCalculator() {
                       <tr>
                         <td className="border px-2 py-1">Снижение расхода</td>
                         {Object.values(brandReductions).map((pct, idx) => (
-                          <td key={idx} className="border px-2 py-1">−{pct}%</td>
+                          <td key={idx} className="border px-2 py-1">
+                            −{pct}%
+                          </td>
                         ))}
                       </tr>
                       <tr>
                         <td className="border px-2 py-1">Экономия денег</td>
                         {Object.keys(brandReductions).map((brand) => (
-                          <td key={brand} className="border px-2 py-1">{savings[brand]?.toFixed(0)} ₽</td>
+                          <td key={brand} className="border px-2 py-1">
+                            {savings[brand]?.toFixed(0)} ₽
+                          </td>
                         ))}
                       </tr>
                     </tbody>
@@ -469,15 +543,28 @@ export default function FuelSavingCalculator() {
                   { src: "/speed.png", text: "Быстрый расчёт" },
                 ].map((item, i) => (
                   <div key={i} className="flex flex-col items-center w-20">
-                    <img src={item.src} alt={item.text} className={`${iconSize} mb-2 object-contain`} />
-                    <p className={`${isMobileView ? "text-xs" : "text-sm"} text-center`}>{item.text}</p>
+                    <img
+                      src={item.src}
+                      alt={item.text}
+                      className={`${iconSize} mb-2 object-contain`}
+                    />
+                    <p
+                      className={`${
+                        isMobileView ? "text-xs" : "text-sm"
+                      } text-center`}
+                    >
+                      {item.text}
+                    </p>
                   </div>
                 ))}
               </div>
 
               {/* Кнопка PDF */}
               <div className="screen-only mt-4">
-                <button onClick={downloadPDF} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold">
+                <button
+                  onClick={downloadPDF}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold"
+                >
                   Скачать PDF
                 </button>
               </div>
@@ -488,6 +575,7 @@ export default function FuelSavingCalculator() {
     </div>
   );
 }
+
 
 
 
