@@ -188,54 +188,55 @@ export default function FuelSavingCalculator() {
     }, 2500);
   };
 
-  // ======= PDF =======
-  const downloadPDF = () => {
-    const el = document.getElementById("pdf-content");
-    if (!el) return;
+        // ======= PDF =======
+        const downloadPDF = () => {
+        const el = document.getElementById("pdf-content");
+        if (!el) return;
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    let newTab = null;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        let newTab = null;
 
-    if (isIOS) {
-      // Открываем вкладку сразу, пока Safari не заблокировал
-      newTab = window.open("", "_blank");
-      newTab.document.write("<p>Генерация PDF...</p>");
-    }
-
-    setTimeout(() => {
-      html2canvas(el, { scale: 2, backgroundColor: "#fff", useCORS: true }).then((canvas) => {
-        const pdf = new jsPDF("p", "mm", "a4");
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-
-        let imgWidth = pageWidth - 20;
-        let imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        if (imgHeight > pageHeight - 20) {
-          const ratio = (pageHeight - 20) / imgHeight;
-          imgHeight *= ratio;
-          imgWidth *= ratio;
+        if (isIOS) {
+          // Открываем вкладку сразу
+          newTab = window.open("", "_blank");
+          newTab.document.write("<p>Генерация PDF...</p>");
         }
 
-        const x = (pageWidth - imgWidth) / 2;
-        const y = (pageHeight - imgHeight) / 2;
+        setTimeout(() => {
+          html2canvas(el, { scale: 1.5, backgroundColor: "#fff", useCORS: true }).then((canvas) => {
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
 
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
+            let imgWidth = pageWidth - 20;
+            let imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        if (isIOS && newTab) {
-          const pdfBlob = pdf.output("blob");
-          const blobUrl = URL.createObjectURL(pdfBlob);
-          newTab.document.body.style.margin = "0";
-          newTab.document.body.style.height = "100vh";
-          newTab.document.body.innerHTML = `<iframe src="${blobUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
-        } 
-          else {
-          pdf.save("Alliance-Fuel-Savings.pdf");
-          }
+            if (imgHeight > pageHeight - 20) {
+              const ratio = (pageHeight - 20) / imgHeight;
+              imgHeight *= ratio;
+              imgWidth *= ratio;
+            }
 
-      });
-    }, 200);
-  };
+            const x = (pageWidth - imgWidth) / 2;
+            const y = (pageHeight - imgHeight) / 2;
+
+            pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
+
+            if (isIOS && newTab) {
+              // Открываем PDF как строку base64
+              newTab.document.body.innerHTML = "";
+              newTab.document.body.style.margin = "0";
+              newTab.document.body.style.height = "100vh";
+              newTab.document.write(
+                `<iframe width="100%" height="100%" style="border:none;" src="${pdf.output("dataurlstring")}"></iframe>`
+              );
+            } else {
+              pdf.save("Alliance-Fuel-Savings.pdf");
+            }
+          });
+        }, 200);
+      };
+
 
   // ======= Поле ввода =======
   const renderInput = (label, value, setValue, history, keyName, setHistory) => (
