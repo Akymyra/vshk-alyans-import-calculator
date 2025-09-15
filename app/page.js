@@ -491,11 +491,14 @@ export default function FuelSavingCalculator() {
               <p className="mt-6 font-bold text-blue-600">ВШК Альянс-Импорт</p>
 
               {/* Кнопка PDF */}
-              <div className="screen-only mt-4">
-                <button onClick={downloadPDF} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold">
-                  Скачать PDF
-                </button>
-              </div>
+                <div className="screen-only mt-4">
+                  <button
+                    onClick={downloadPDF}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold"
+                  >
+                    {/iPad|iPhone|iPod/.test(navigator.userAgent) ? "Открыть PDF" : "Скачать PDF"}
+                  </button>
+                </div>
             </div>
           )}
         </div>
