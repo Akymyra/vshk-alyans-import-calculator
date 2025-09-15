@@ -188,7 +188,7 @@ export default function FuelSavingCalculator() {
     }, 2500);
   };
 
-  // ======= PDF (фикс для мобилок) =======
+  // ======= PDF (разбиение на страницы) =======
   const downloadPDF = () => {
     const el = document.getElementById("pdf-content");
     if (!el) return;
@@ -204,20 +204,16 @@ export default function FuelSavingCalculator() {
 
         const imgData = canvas.toDataURL("image/png");
         const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * pageWidth) / canvas.width;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        if (imgHeight > pageHeight) {
-          let heightLeft = imgHeight;
-          let position = 0;
+        let heightLeft = imgHeight;
+        let position = 0;
 
-          while (heightLeft > 0) {
-            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-            position -= pageHeight;
-            if (heightLeft > 0) pdf.addPage();
-          }
-        } else {
-          pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+        while (heightLeft > 0) {
+          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+          position -= pageHeight;
+          if (heightLeft > 0) pdf.addPage();
         }
 
         pdf.save("Alliance_Fuel_Savings.pdf");
@@ -443,9 +439,9 @@ export default function FuelSavingCalculator() {
                   </div>
                 </div>
 
-                {/* Таблица (фикс для мобилок) */}
-                <div className="flex justify-center mt-4 overflow-x-auto">
-                  <table className={`border-collapse border border-gray-300 text-center w-full ${isMobileView ? "text-[9px]" : "text-sm"}`}>
+                {/* Таблица (уменьшение на мобилке) */}
+                <div className={`flex justify-center mt-4 ${isMobileView ? "scale-90 -ml-6" : ""}`}>
+                  <table className="border-collapse border border-gray-300 text-center w-full text-sm">
                     <thead>
                       <tr className="bg-gray-100">
                         <th className="border px-2 py-1">Показатель</th>
@@ -499,6 +495,7 @@ export default function FuelSavingCalculator() {
     </div>
   );
 }
+
 
 
 
