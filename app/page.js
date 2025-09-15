@@ -190,50 +190,47 @@ export default function FuelSavingCalculator() {
 
         // ======= PDF =======
         const downloadPDF = () => {
-          const el = document.getElementById("pdf-content");
-          if (!el) return;
+  const el = document.getElementById("pdf-content");
+  if (!el) return;
 
-          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-          let newTab = null;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  let newTab = null;
 
-          if (isIOS) {
-            // Открываем вкладку сразу
-            newTab = window.open("", "_blank");
-            newTab.document.write("<p>Генерация PDF...</p>");
-          }
+  if (isIOS) {
+    newTab = window.open("", "_blank");
+    newTab.document.write("<p>Генерация PDF...</p>");
+  }
 
-          setTimeout(() => {
-            html2canvas(el, { scale: 1.2, backgroundColor: "#fff", useCORS: true }).then((canvas) => {
-              const pdf = new jsPDF("p", "mm", "a4");
-              const pageWidth = pdf.internal.pageSize.getWidth();
-              const pageHeight = pdf.internal.pageSize.getHeight();
+  setTimeout(() => {
+    html2canvas(el, { scale: 1.2, backgroundColor: "#fff", useCORS: true }).then((canvas) => {
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
 
-              let imgWidth = pageWidth - 20;
-              let imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let imgWidth = pageWidth - 20;
+      let imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-              if (imgHeight > pageHeight - 20) {
-                const ratio = (pageHeight - 20) / imgHeight;
-                imgHeight *= ratio;
-                imgWidth *= ratio;
-              }
+      if (imgHeight > pageHeight - 20) {
+        const ratio = (pageHeight - 20) / imgHeight;
+        imgHeight *= ratio;
+        imgWidth *= ratio;
+      }
 
-              const x = (pageWidth - imgWidth) / 2;
-              const y = (pageHeight - imgHeight) / 2;
+      const x = (pageWidth - imgWidth) / 2;
+      const y = (pageHeight - imgHeight) / 2;
 
-              pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, imgWidth, imgHeight);
 
-              if (isIOS && newTab) {
-                // Открываем PDF напрямую
-                const pdfData = pdf.output("dataurlstring");
-                newTab.location.href = pdfData;
-              } else {
-                pdf.save("Alliance-Fuel-Savings.pdf");
-              }
-            });
-          }, 200);
-        };
-
-
+      if (isIOS && newTab) {
+        // Используем bloburl для iOS
+        const blobUrl = pdf.output("bloburl");
+        newTab.location.href = blobUrl;
+      } else {
+        pdf.save("Alliance-Fuel-Savings.pdf");
+      }
+    });
+  }, 200);
+};
 
   // ======= Поле ввода =======
   const renderInput = (label, value, setValue, history, keyName, setHistory) => (
