@@ -390,14 +390,15 @@ export default function FuelSavingCalculator() {
                 className="mt-6 space-y-4 bg-white p-4 rounded-2xl shadow-lg text-center mx-auto flex flex-col items-center"
                 style={{ color: "#028cff", maxWidth: "100%" }}
               >
-                <div className="flex justify-center">
+               <div className="flex justify-center">
                   <img 
                     src="/logo.svg" 
                     alt="ВШК Альянс-Импорт" 
-                    className="w-[200px] h-auto max-w-full" 
-                    style={{ objectFit: "contain" }} 
+                    className="max-w-full h-auto" 
+                    style={{ width: "100%", maxWidth: "250px", objectFit: "contain" }} 
                   />
                 </div>
+
 
                 <h2 className="text-lg sm:text-xl font-bold mb-3">Результаты расчёта</h2>
 
