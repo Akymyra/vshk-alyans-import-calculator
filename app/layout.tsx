@@ -15,6 +15,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
+        {/* Google site verification */}
+        <meta name="google-site-verification" content="6sukjme2c2rx" />
+
         {/* Google Analytics 4 */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZJZ5GP6EQN"></script>
         <script
@@ -32,5 +35,6 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
 
 
