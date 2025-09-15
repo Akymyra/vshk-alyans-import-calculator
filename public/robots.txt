@@ -1,0 +1,4 @@
+﻿User-agent: *
+Allow: /
+
+Sitemap: https://vshk-alyans-import-calculator.vercel.app/sitemap.xml
