@@ -188,38 +188,32 @@ export default function FuelSavingCalculator() {
     }, 2500);
   };
 
-  // ======= PDF (разбиение на страницы) =======
-  const downloadPDF = () => {
-    const el = document.getElementById("pdf-content");
-    if (!el) return;
+  // ======= PDF по секциям =======
+  const downloadPDF = async () => {
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
 
-    const screenOnly = el.querySelectorAll(".screen-only");
-    screenOnly.forEach((n) => (n.style.display = "none"));
+    const sections = [
+      document.getElementById("pdf-header"),
+      document.getElementById("pdf-chart"),
+      document.getElementById("pdf-table"),
+      document.getElementById("pdf-icons"),
+    ];
 
-    setTimeout(() => {
-      html2canvas(el, { scale: 2, backgroundColor: "#fff", useCORS: true }).then((canvas) => {
-        const pdf = new jsPDF("p", "mm", "a4");
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
+    for (let i = 0; i < sections.length; i++) {
+      const el = sections[i];
+      if (!el) continue;
 
-        const imgData = canvas.toDataURL("image/png");
-        const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#fff", useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+      const imgWidth = pageWidth - 20;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        let heightLeft = imgHeight;
-        let position = 0;
+      if (i > 0) pdf.addPage();
+      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+    }
 
-        while (heightLeft > 0) {
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-          position -= pageHeight;
-          if (heightLeft > 0) pdf.addPage();
-        }
-
-        pdf.save("Alliance_Fuel_Savings.pdf");
-        screenOnly.forEach((n) => (n.style.display = ""));
-      });
-    }, 200);
+    pdf.save("Alliance_Fuel_Savings.pdf");
   };
 
   // ======= Поле ввода =======
@@ -303,7 +297,6 @@ export default function FuelSavingCalculator() {
       }`}
     >
       {appLoading ? (
-        // Splash screen
         <div
           className={`min-h-screen flex flex-col justify-center items-center transition-opacity duration-1000 ${
             fadeStage === "fade-in"
@@ -316,7 +309,6 @@ export default function FuelSavingCalculator() {
           <img src="/logo.svg" alt="Логотип" className="w-[420px] h-auto" />
         </div>
       ) : (
-        // Карточка калькулятора
         <div
           className={`${isMobileView ? "max-w-[380px]" : "max-w-3xl"} w-full p-4 rounded-2xl shadow-lg relative border text-center transition-opacity duration-700 opacity-100`}
           style={
@@ -347,21 +339,21 @@ export default function FuelSavingCalculator() {
             </button>
           </div>
 
-          {/* Лого */}
-          <div className="flex justify-center">
-            <img src="/logo.svg" alt="ВШК Альянс-Импорт" className="w-full max-w-[300px] h-auto" />
+          {/* Лого и заголовок */}
+          <div id="pdf-header">
+            <div className="flex justify-center">
+              <img src="/logo.svg" alt="ВШК Альянс-Импорт" className="w-full max-w-[300px] h-auto" />
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold mb-3 text-center" style={{ color: "#028cff" }}>
+              Калькулятор экономии топлива
+            </h1>
+            <p className="mb-4 text-sm text-center max-w-xl mx-auto">
+              Укажите пробег, расход и цену топлива — и узнайте, сколько сможете
+              сэкономить с шинами <b>Annaite, Aufine, Kapsen и Pegasus</b>. <br />
+              ⚠️ Это <b>предварительный расчёт</b>, реальная экономия зависит от
+              дорог, нагрузки, стиля вождения и техсостояния.
+            </p>
           </div>
-
-          <h1 className="text-xl sm:text-2xl font-bold mb-3 text-center" style={{ color: "#028cff" }}>
-            Калькулятор экономии топлива
-          </h1>
-
-          <p className="mb-4 text-sm text-center max-w-xl mx-auto">
-            Укажите пробег, расход и цену топлива — и узнайте, сколько сможете
-            сэкономить с шинами <b>Annaite, Aufine, Kapsen и Pegasus</b>. <br />
-            ⚠️ Это <b>предварительный расчёт</b>, реальная экономия зависит от
-            дорог, нагрузки, стиля вождения и техсостояния.
-          </p>
 
           {/* Поля */}
           <div className={`${isMobileView ? "max-w-xs" : "max-w-md"} mx-auto space-y-3`}>
@@ -395,10 +387,7 @@ export default function FuelSavingCalculator() {
               className="mt-6 space-y-4 bg-white p-4 rounded-2xl shadow-lg text-center mx-auto"
               style={{ color: "#028cff", maxWidth: "100%" }}
             >
-              <div className="flex justify-center">
-                <img src="/logo.svg" alt="ВШК Альянс-Импорт" className="w-full max-w-[300px] h-auto" />
-              </div>
-              <h2 className="text-lg sm:text-xl font-bold mb-3">Калькулятор экономии топлива</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3">Результаты расчёта</h2>
 
               <p className="mb-2 text-sm sm:text-base text-center">
                 На основании введённых данных выполнен <b>предварительный расчёт</b>. Реальная экономия зависит от условий дороги, нагрузки, стиля вождения, давления и техсостояния. <br />
@@ -410,7 +399,7 @@ export default function FuelSavingCalculator() {
               </p>
 
               {/* Диаграмма */}
-              <div className={`${contentWidthClass} w-full mx-auto`}>
+              <div id="pdf-chart" className={`${contentWidthClass} w-full mx-auto`}>
                 <div className="w-full px-4">
                   <div className="border border-gray-300 rounded-lg flex justify-center">
                     <ResponsiveContainer width="100%" height={isMobileView ? 260 : 340}>
@@ -438,38 +427,38 @@ export default function FuelSavingCalculator() {
                     </ResponsiveContainer>
                   </div>
                 </div>
+              </div>
 
-                {/* Таблица (уменьшение на мобилке) */}
-                <div className={`flex justify-center mt-4 ${isMobileView ? "scale-90 -ml-6" : ""}`}>
-                  <table className="border-collapse border border-gray-300 text-center w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border px-2 py-1">Показатель</th>
-                        {Object.keys(brandReductions).map((brand) => (
-                          <th key={brand} className="border px-2 py-1">{brand}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="border px-2 py-1">Снижение расхода</td>
-                        {Object.values(brandReductions).map((pct, idx) => (
-                          <td key={idx} className="border px-2 py-1">−{pct}%</td>
-                        ))}
-                      </tr>
-                      <tr>
-                        <td className="border px-2 py-1">Экономия денег</td>
-                        {Object.keys(brandReductions).map((brand) => (
-                          <td key={brand} className="border px-2 py-1">{savings[brand]?.toFixed(0)} ₽</td>
-                        ))}
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+              {/* Таблица */}
+              <div id="pdf-table" className={`flex justify-center mt-4 ${isMobileView ? "scale-75 -ml-10" : ""} overflow-hidden`}>
+                <table className="border-collapse border border-gray-300 text-center w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border px-2 py-1">Показатель</th>
+                      {Object.keys(brandReductions).map((brand) => (
+                        <th key={brand} className="border px-2 py-1">{brand}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border px-2 py-1">Снижение расхода</td>
+                      {Object.values(brandReductions).map((pct, idx) => (
+                        <td key={idx} className="border px-2 py-1">−{pct}%</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="border px-2 py-1">Экономия денег</td>
+                      {Object.keys(brandReductions).map((brand) => (
+                        <td key={brand} className="border px-2 py-1">{savings[brand]?.toFixed(0)} ₽</td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
               {/* Иконки */}
-              <div className="flex justify-center gap-6 mt-6 flex-wrap">
+              <div id="pdf-icons" className="flex justify-center gap-6 mt-6 flex-wrap">
                 {[
                   { src: "/fuel.png", text: "Экономия топлива" },
                   { src: "/money.png", text: "Экономия денег" },
