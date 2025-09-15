@@ -382,24 +382,29 @@ export default function FuelSavingCalculator() {
             </div>
           )}
 
-          {/* Результаты */}
-          {Object.keys(savings).length > 0 && (
-            <div
-              id="pdf-content"
-              ref={resultsRef}
-              className="mt-6 space-y-4 bg-white p-4 rounded-2xl shadow-lg text-center mx-auto"
-              style={{ color: "#028cff", maxWidth: "100%" }}
-            >
-              <h2 className="text-lg sm:text-xl font-bold mb-3">Результаты расчёта</h2>
+              {/* Результаты */}
+              {Object.keys(savings).length > 0 && (
+              <div
+                id="pdf-content"
+                ref={resultsRef}
+                className="mt-6 space-y-4 bg-white p-4 rounded-2xl shadow-lg text-center mx-auto flex flex-col items-center"
+                style={{ color: "#028cff", maxWidth: "100%" }}
+              >
+                <div className="flex justify-center">
+                  <img src="/logo.svg" alt="ВШК Альянс-Импорт" className="w-full max-w-[300px] h-auto" />
+                </div>
 
-              <p className="mb-2 text-sm sm:text-base text-center">
-                На основании введённых данных выполнен <b>предварительный расчёт</b>. Реальная экономия зависит от условий дороги, нагрузки, стиля вождения, давления и техсостояния. <br />
-                С нашими шинами вы сможете сэкономить{" "}
-                <b>
-                  от {Math.min(...Object.values(savings)).toFixed(0)} ₽ до{" "}
-                  {Math.max(...Object.values(savings)).toFixed(0)} ₽
-                </b>.
-              </p>
+                <h2 className="text-lg sm:text-xl font-bold mb-3">Результаты расчёта</h2>
+
+                <p className="mb-2 text-sm sm:text-base text-center">
+                  На основании введённых данных выполнен <b>предварительный расчёт</b>. Реальная экономия зависит от условий дороги, нагрузки, стиля вождения, давления и техсостояния. <br />
+                  С нашими шинами вы сможете сэкономить{" "}
+                  <b>
+                    от {Math.min(...Object.values(savings)).toFixed(0)} ₽ до{" "}
+                    {Math.max(...Object.values(savings)).toFixed(0)} ₽
+                  </b>.
+                </p>
+
 
               {/* Диаграмма */}
               <div className={`${contentWidthClass} w-full mx-auto`}>
